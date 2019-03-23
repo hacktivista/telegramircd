@@ -2116,7 +2116,7 @@ class Server:
                 try:
                     from1 = server.ensure_special_user(fwd_from.from_id, None)
                     for client in server.auth_clients():
-                        line = '\x0315「Fwd {}」\x0f{}'.format(
+                        line = '|Fwd {}| {}'.format(
                             client.nick if from1 == server else from1.nick, line)
                         break
                 except Exception as ex:
@@ -2141,7 +2141,7 @@ class Server:
                         refer_text = refer_text[:8]+'...'
                     user = refer['from']
                     for client in server.auth_clients():
-                        line = '\x0315「Re {}: {}」\x0f{}'.format(
+                        line = '|Re {}: {}| {}'.format(
                             client.nick if user == server else user.nick, refer_text, line)
                         break
 
