@@ -74,7 +74,7 @@ Firefox
 You will join `+telegram` channel automatically and find your contact list there. Some commands are available:
 
 - `help`
-- `status`, mutual contact list、group/supergroup list
+- `status`, mutual contact, user list、group/supergroup list
 - `eval $expr`: eval the Python expression `$expr`. Examples:
   ```
   eval client.peer_id2special_room

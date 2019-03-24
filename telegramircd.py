@@ -1021,7 +1021,7 @@ class StatusChannel(Channel):
             self.respond(client, 'eval expression')
             self.respond(client, '  eval a Python expression')
             self.respond(client, 'status [pattern]')
-            self.respond(client, '  show contacts/chats/channels')
+            self.respond(client, '  show contacts/users/chats/channels')
         elif msg.startswith('status'):
             pattern = None
             ary = msg.split(' ', 1)
@@ -1037,6 +1037,11 @@ class StatusChannel(Channel):
                 if user.is_contact:
                     if pattern is not None and not (pattern in user.username or pattern in user.printname): continue
                     self.respond(client, '  ' + repr(user))
+            self.respond(client, '{} users (not contacts):', im_name)
+            for peer_id, user in server.user_id2special_user.items():
+                if not user.is_contact:
+                    if pattern is not None and not (pattern in user.username or pattern in user.print_name): continue
+                    self.respond(client, '  {:<16} {:<16d} {}', (user.username or '-'), peer_id, user.print_name)
             self.respond(client, '{} chats/channels:', im_name)
             for peer_id, room in server.peer_id2special_room.items():
                 if pattern is not None and pattern not in room.name: continue
