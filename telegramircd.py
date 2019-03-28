@@ -2142,8 +2142,9 @@ class Server:
                         web.append_history(refer)
                 if refer is not None:
                     refer_text = refer['message'].replace('\n', '\\n')
-                    if len(refer_text) > 8:
-                        refer_text = refer_text[:8]+'...'
+                    refer_len = int(options.refer_text_len)
+                    if len(refer_text) > refer_len:
+                        refer_text = refer_text[:refer_len]+'...'
                     user = refer['from']
                     for client in server.auth_clients():
                         line = '|Re {}: {}| {}'.format(
@@ -2241,6 +2242,7 @@ def main():
     ap.add_argument('--mark-read', choices=('always', 'reply', 'never'), default='reply', help='when to mark_read private messages from users. always: mark_read all messages; reply: mark_read when sending messages to the peer; never: never mark_read. default: reply'),
     ap.add_argument('--paste-wait', type=float, default=0.1, help='PRIVMSG lines will be hold for up to $paste_wait seconds, lines in this interval will be packed to a multiline message')
     ap.add_argument('-q', '--quiet', action='store_const', const=logging.WARN, dest='loglevel')
+    ap.add_argument('--refer-text-len', default=8, help='Set the length of refer texts in replies')
     ap.add_argument('--sasl-password', default='', help='Set the SASL password')
     ap.add_argument('--special-channel-prefix', choices=('&', '!', '#', '##'), default='&', help='prefix for SpecialChannel')
     ap.add_argument('--tg-api-id', type=int, help='App api_id on https://my.telegram.org/apps')

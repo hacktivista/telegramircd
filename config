@@ -49,3 +49,6 @@ irc-port: 6669
 
 # SASL PLAIN password (as an alternative to --irc-password)
 #sasl-password:
+
+# Set the length of refer texts in replies
+#refer-text-len: 32
