@@ -1873,7 +1873,7 @@ class Server:
         server = self
         status = StatusChannel()
         self.channels = {status.name: status}
-        self.name = 'telegramircd.maskray.me'
+        self.name = socket.gethostname()
         self.nicks = {}
         self.clients = weakref.WeakSet()
         self.log_file = None
