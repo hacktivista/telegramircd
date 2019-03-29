@@ -614,18 +614,14 @@ class Command:
 
     @staticmethod
     def motd(client):
-        async def do():
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get('https://api.github.com/repos/MaskRay/telegramircd/commits') as resp:
-                        client.reply('375 {} :- {} Message of the Day -', client.nick, server.name)
-                        data = await resp.json()
-                        for x in data[:5]:
-                            client.reply('372 {} :- {} {} {}'.format(client.nick, x['sha'][:7], x['commit']['committer']['date'][:10], x['commit']['message'].replace('\n', '\\n')))
-                        client.reply('376 {} :End of /MOTD command.', client.nick)
-            except:
-                pass
-        server.loop.create_task(do())
+        client.reply('375 {} :- {} Message of the Day -', client.nick, server.name)
+        client.reply('372 {} :- Welcome to the telegramircd server at {}', client.nick,server.name)
+        client.reply('372 {} :- You can find the telegramircd code of prsai\'s fork on https://github.com/prsai/telegramircd', client.nick)
+        client.reply('372 {} :- or the upstream code on https://github.com/MaskRay/telegramircd', client.nick)
+        client.reply('372 {} :-', client.nick)
+        client.reply('372 {} :- This is not a normal IRC server, it\'s a gateway to control', client.nick)
+        client.reply('372 {} :- a Telegram user account from an IRC client', client.nick)
+        client.reply('376 {} :End of /MOTD command.', client.nick)
 
     @staticmethod
     def names(client, target):
