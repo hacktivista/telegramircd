@@ -1050,7 +1050,7 @@ class StatusChannel(Channel):
             last_date = None
             chunk_size = 20
             self.respond(client, 'Dialogs:')
-            self.respond(client, '  {:<16} {:<8} {:<5} {}', 'Id', 'Unread', 'Type', 'Name')
+            self.respond(client, '  {:<16} {:<8} {:<8}  {:<5} {}', 'Id', 'Unread', 'Mentions', 'Type', 'Name')
             d = web.proc(tl.functions.messages.GetDialogsRequest(
                 offset_date=last_date,
                 offset_id=0,
@@ -1075,7 +1075,7 @@ class StatusChannel(Channel):
                     id = ds.peer.channel_id
                     ty = 'Chan'
                     name = server.peer_id2special_room[id].name
-                self.respond(client, '  {:<16d} {:<8} {:<5} {}', id, str(ds.unread_count), ty, (name or '-'))
+                self.respond(client, '  {:<16d} {:<8d} {:<8d}  {:<5} {}', id, ds.unread_count, ds.unread_mentions_count, ty, (name or '-'))
         else:
             m = re.match(r'eval (.+)$', msg.strip())
             if m:
