@@ -80,6 +80,7 @@ You will join `+telegram` channel automatically and find your contact list there
   eval client.peer_id2special_room
   eval client.peer_id2special_user
   ```
+- `dialogs` show dialogs, last conversations including number of unread messages
 
 The server will be bound to one account, however, you may have more than one IRC clients connected to the server.
 

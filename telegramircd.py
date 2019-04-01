@@ -1018,6 +1018,8 @@ class StatusChannel(Channel):
             self.respond(client, '  eval a Python expression')
             self.respond(client, 'status [pattern]')
             self.respond(client, '  show contacts/users/chats/channels')
+            self.respond(client, 'dialogs')
+            self.respond(client, '  show last conversations (dialogs)')
         elif msg.startswith('status'):
             pattern = None
             ary = msg.split(' ', 1)
@@ -1043,6 +1045,36 @@ class StatusChannel(Channel):
                 if pattern is not None and pattern not in room.name: continue
                 if isinstance(room, SpecialChannel):
                     self.respond(client, '  ' + room.name)
+        elif msg.startswith('dialogs'):
+            last_date = None
+            chunk_size = 20
+            self.respond(client, 'Dialogs:')
+            self.respond(client, '  {:<16} {:<8} {:<5} {}', 'Id', 'Unread', 'Type', 'Name')
+            d = web.proc(tl.functions.messages.GetDialogsRequest(
+                offset_date=last_date,
+                offset_id=0,
+                offset_peer=tl.types.InputPeerEmpty(),
+                limit=chunk_size,
+                hash=0
+            ))
+            for ds in d.dialogs:
+                if type(ds.peer) is tl.types.PeerUser:
+                    id = ds.peer.user_id
+                    ty = 'User'
+                    try:
+                        u = server.user_id2special_user[id]
+                        name = u.username or u.print_name
+                    except:
+                        name = client.nick
+                elif type(ds.peer) is tl.types.PeerChat:
+                    id = ds.peer.chat_id
+                    ty = 'Chat'
+                    name = server.peer_id2special_room[id].name
+                else:
+                    id = ds.peer.channel_id
+                    ty = 'Chan'
+                    name = server.peer_id2special_room[id].name
+                self.respond(client, '  {:<16d} {:<8} {:<5} {}', id, str(ds.unread_count), ty, (name or '-'))
         else:
             m = re.match(r'eval (.+)$', msg.strip())
             if m:
