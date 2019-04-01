@@ -1036,6 +1036,7 @@ class StatusChannel(Channel):
                     if pattern is not None and not (pattern in user.username or pattern in user.printname): continue
                     self.respond(client, '  ' + repr(user))
             self.respond(client, '{} users (not contacts):', im_name)
+            self.respond(client, '  {:<16} {:<16} {}', 'Username', 'Id', 'PrintName')
             for peer_id, user in server.user_id2special_user.items():
                 if not user.is_contact:
                     if pattern is not None and not (pattern in user.username or pattern in user.print_name): continue
