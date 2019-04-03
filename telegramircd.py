@@ -1042,10 +1042,11 @@ class StatusChannel(Channel):
                     if pattern is not None and not (pattern in user.username or pattern in user.print_name): continue
                     self.respond(client, '  {:<10d} {:<20} {}', peer_id, (user.username or '-'), user.print_name)
             self.respond(client, '{} chats/channels:', im_name)
+            self.respond(client, '  {:<10} {}', 'Id', 'Name')
             for peer_id, room in server.peer_id2special_room.items():
                 if pattern is not None and pattern not in room.name: continue
                 if isinstance(room, SpecialChannel):
-                    self.respond(client, '  ' + room.name)
+                    self.respond(client, '  {:<10d} {}', peer_id, room.name)
         elif msg.startswith('dialogs'):
             last_date = None
             chunk_size = 20
