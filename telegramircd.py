@@ -1036,11 +1036,11 @@ class StatusChannel(Channel):
                     if pattern is not None and not (pattern in user.username or pattern in user.printname): continue
                     self.respond(client, '  ' + repr(user))
             self.respond(client, '{} users (not contacts):', im_name)
-            self.respond(client, '  {:<16} {:<16} {}', 'Username', 'Id', 'PrintName')
+            self.respond(client, '  {:<10} {:<20} {}', 'Id', 'Username', 'PrintName')
             for peer_id, user in server.user_id2special_user.items():
                 if not user.is_contact:
                     if pattern is not None and not (pattern in user.username or pattern in user.print_name): continue
-                    self.respond(client, '  {:<16} {:<16d} {}', (user.username or '-'), peer_id, user.print_name)
+                    self.respond(client, '  {:<10d} {:<20} {}', peer_id, (user.username or '-'), user.print_name)
             self.respond(client, '{} chats/channels:', im_name)
             for peer_id, room in server.peer_id2special_room.items():
                 if pattern is not None and pattern not in room.name: continue
