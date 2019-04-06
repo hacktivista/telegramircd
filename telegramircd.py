@@ -14,7 +14,7 @@ import telethon.tl.types as tg_types
 import telethon.tl.functions.contacts
 import telethon.tl.functions.messages
 
-import aiohttp.web, asyncio, base64, inspect, json, logging.handlers, magic, os, pprint, random, re, \
+import aiohttp.web, asyncio, base64, inspect, json, logging.handlers, magic, os, pprint, pytz, random, re, \
     shlex, signal, socket, ssl, string, sys, tempfile, time, traceback, uuid, weakref
 
 logger = logging.getLogger('telegramircd')
@@ -1020,6 +1020,8 @@ class StatusChannel(Channel):
             self.respond(client, '  show contacts/users/chats/channels')
             self.respond(client, 'dialogs')
             self.respond(client, '  show last conversations (dialogs)')
+            self.respond(client, 'history <peer> [limit]')
+            self.respond(client, '  show last messages with limit, default 40')
         elif msg.startswith('status'):
             pattern = None
             ary = msg.split(' ', 1)
@@ -1077,6 +1079,38 @@ class StatusChannel(Channel):
                     ty = 'Chan'
                     name = server.peer_id2special_room[id].name
                 self.respond(client, '  {:<10d} {:<10d} {:<10d} {}  {}', id, ds.unread_count, ds.unread_mentions_count, ty, (name or '-'))
+        elif msg.startswith('history'):
+            ary = msg.split()
+            la = len(ary)
+            if la < 2 or la > 3:
+                self.respond(client, 'Wrong parameters')
+                self.respond(client, 'Usage: history <peer> [limit]')
+                return
+            if la == 3:
+                req_limit = int(ary[2])
+            else:
+                req_limit = 40
+            req_peer = ary[1]
+            try:
+                any_peer = server.name2special_room[req_peer.lower()].peer
+            except:
+                any_peer = req_peer
+            try:
+                m = web.proc(tl.functions.messages.GetHistoryRequest(
+                    peer=any_peer,
+                    limit=req_limit,
+                    max_id=0,
+                    min_id=0,
+                    hash=0,
+                    add_offset=0,
+                    offset_date=None,
+                    offset_id=0
+                ))
+            except:
+                self.respond(client, 'Entity not found')
+                return
+            for ms in reversed(m.messages):
+                server.on_telegram_update_message(None, ms, history=True)
         else:
             m = re.match(r'eval (.+)$', msg.strip())
             if m:
@@ -2085,7 +2119,7 @@ class Server:
         else:
             info('on_telegram_update %r %r', type(update).__name__, update.to_dict())
 
-    def on_telegram_update_message(self, update, msg, sender=None, to=None):
+    def on_telegram_update_message(self, update, msg, sender=None, to=None, history=False):
         if sender is None:
             sender, to = self.resolve_from_to(msg)
         if options.ignore_bot and isinstance(sender, SpecialUser) and sender.bot:
@@ -2143,9 +2177,9 @@ class Server:
         else:
             text = msg.message
 
-        self.deliver_message(msg.id, sender, to, msg.date, text, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
+        self.deliver_message(msg.id, sender, to, msg.date, text, history, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
 
-    def deliver_message(self, msg_id, sender, to, date, text, fwd_from=None, reply_to_msg_id=None):
+    def deliver_message(self, msg_id, sender, to, date, text, history, fwd_from=None, reply_to_msg_id=None):
         for line in text.splitlines():
             if fwd_from is not None:
                 try:
@@ -2180,6 +2214,9 @@ class Server:
                         line = '|Re {}: {}| {}'.format(
                             client.nick if user == server else user.nick, refer_text, line)
                         break
+            if history:
+                date_local = date.astimezone(pytz.timezone(options.history_timezone))
+                line = date_local.strftime(options.history_time_format).strip('"\'') + line
 
             client = server.preferred_client()
             if client:
@@ -2241,6 +2278,8 @@ def main():
     ap.add_argument('-d', '--debug', action='store_true', help='run ipdb on uncaught exception')
     ap.add_argument('--dcc-send', type=int, default=10*1024*1024, help='size limit receiving from DCC SEND. 0: disable DCC SEND')
     ap.add_argument('--heartbeat', type=int, default=30, help='time to wait for IRC commands. The server will send PING and close the connection after another timeout of equal duration if no commands is received.')
+    ap.add_argument('--history-time-format', type=str, default='', help='Time format prefixed to history messages')
+    ap.add_argument('--history-timezone', type=str, default='UTC', help='Timezone for time on history messages')
     ap.add_argument('--http-cert', help='TLS certificate for HTTPS over TLS. You may concatenate certificate+key, specify a single PEM file and omit `--http-key`. Use HTTP if neither --http-cert nor --http-key is specified')
     ap.add_argument('--http-url', default='http://localhost',
                     help='Show document links as http://localhost/document/$id')

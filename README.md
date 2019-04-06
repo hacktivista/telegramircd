@@ -82,6 +82,7 @@ You will join `+telegram` channel automatically and find your contact list there
   eval client.peer_id2special_user
   ```
 - `dialogs` show dialogs, last conversations including number of unread messages
+- `history <peer> [limit]` show last messages with limit, if no set 40 is by default
 
 The server will be bound to one account, however, you may have more than one IRC clients connected to the server.
 
@@ -131,6 +132,8 @@ Supported IRC commands:
 ## Server options
 
 - `--config`, short option `-c`, config file path, see [config](config)
+- `--history-time-format <format>`, time format prefixed to history messages, if not set is empty
+- `--history-timezone <timezone>`, timezone for history messages, e.g. Europe/Madrid, default UTC
 - HTTP/WebSocket related options
   + `--http-cert cert.pem`, TLS certificate for HTTPS. You may concatenate certificate+key, specify a single PEM file and omit `--http-key`. Use HTTP if neither --http-cert nor --http-key is specified.
   + `--http-url http://localhost`, Show file links as http://localhost/document/$id .

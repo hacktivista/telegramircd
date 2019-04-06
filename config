@@ -52,3 +52,8 @@ irc-port: 6669
 
 # Set the length of refer texts in replies
 #refer-text-len: 32
+
+# Set date/time format for history messages, ' and " (quotes) will be stripped
+#history-time-format: '[%d %H:%M] '
+# Set timezone for history messages, default UTC
+#history-timezone: Europe/Madrid
