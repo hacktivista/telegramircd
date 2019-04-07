@@ -6,6 +6,8 @@ telegramircd is an IRC server that enables IRC clients to send and receive messa
 
 telegramircd uses [telethon-sync](https://github.com/LonamiWebs/Telethon) to communicate with Telegram servers.
 
+**[ This is a fork with dialogs and history functionality among other improvements ]**
+
 ## Installation
 
 - `git clone https://github.com/MaskRay/telegramircd && cd telegramircd`
