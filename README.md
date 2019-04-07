@@ -10,9 +10,15 @@ telegramircd uses [telethon-sync](https://github.com/LonamiWebs/Telethon) to com
 
 ## Installation
 
-- `git clone https://github.com/MaskRay/telegramircd && cd telegramircd`
+Prerequisites
+
 - python >= 3.5
-- libmagic
+- pip3
+- git
+
+Installation process
+
+- `git clone https://github.com/prsai/telegramircd && cd telegramircd`
 - `pip3 install -r requirements.txt`
 
 Create a Telegram App.
