@@ -1,12 +1,14 @@
 # telegramircd [![IRC](https://img.shields.io/badge/IRC-freenode-yellow.svg)](https://webchat.freenode.net/?channels=wechatircd) [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/wechatircd) [![Gitter](https://img.shields.io/badge/chat-Gitter-753a88.svg)](https://gitter.im/wechatircd/wechatircd)
 
+**[ In this fork the documentation in chinese is not updated, sorry for the inconvenience ]**
+
 telegramircd类似于bitlbee，可以用IRC客户端收发Telegram消息。
 
 telegramircd使用[Telethon](https://github.com/LonamiWebs/Telethon)和Telegram服务器通信。
 
 ## 安装
 
-- `git clone https://github.com/MaskRay/telegramircd && cd telegramircd`
+- `git clone https://github.com/prsai/telegramircd && cd telegramircd`
 - python >= 3.5
 - libmagic
 - `pip3 install -r requirements.txt`
