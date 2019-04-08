@@ -1213,9 +1213,9 @@ class SpecialChannel(Channel):
             for client in joined:
                 self.on_join(client)
         if self.is_type(tl.types.PeerChannel):
-            topic = '{} {}'.format(self.peer.channel_id, tg_room.title.replace('\n', '\\n'))
+            topic = '{} {}'.format(self.peer.channel_id, tg_room.title.replace('\n', '\\ '))
         elif self.is_type(tl.types.PeerChat):
-            topic = 'chat#{} {}'.format(self.peer.chat_id, tg_room.title.replace('\n', '\\n'))
+            topic = 'chat#{} {}'.format(self.peer.chat_id, tg_room.title.replace('\n', '\\ '))
         if self.topic != topic:
             self.topic = topic
             for client in server.auth_clients():
@@ -1814,8 +1814,8 @@ class TelegramUpdate:
                 return
             sender, to = value
             server.deliver_message(None, sender, to, datetime.utcnow(),
-                                   '[WebPage] {} {}'.format(webpage.url.replace('\n', '\\n'),
-                                                            (webpage.title or webpage.display_url).replace('\n', '\\n')))
+                                   '[WebPage] {} {}'.format(webpage.url.replace('\n', '\\ '),
+                                                            (webpage.title or webpage.display_url).replace('\n', '\\ ')))
 
 
 class SpecialUser:
@@ -2171,16 +2171,17 @@ class Server:
             elif text is None:
                 text = '[{}] {}'.format(type(msg.media).__name__, msg.media.to_dict())
             if getattr(msg.media, 'caption', None):
-                text += ' | ' + msg.media.caption.replace('\n', '\\n')
+                text += ' | ' + msg.media.caption.replace('\n', '\\ ')
             if msg.message:
-                text += ' | ' + msg.message.replace('\n', '\\n')
+                text += ' | ' + msg.message.replace('\n', '\\ ')
         else:
             text = msg.message
 
         self.deliver_message(msg.id, sender, to, msg.date, text, history, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
 
     def deliver_message(self, msg_id, sender, to, date, text, history, fwd_from=None, reply_to_msg_id=None):
-        for line in text.splitlines():
+        for line in text.splitlines(1):
+            line = line.replace('\n', ' \\')
             if fwd_from is not None:
                 try:
                     from1 = server.ensure_special_user(fwd_from.from_id, None)
@@ -2205,7 +2206,7 @@ class Server:
                         refer = {'id': message.id, 'date': message.date, 'from': from1, 'to': to1, 'message': message.message, 'inferred': True}
                         web.append_history(refer)
                 if refer is not None:
-                    refer_text = refer['message'].replace('\n', '\\n')
+                    refer_text = refer['message'].replace('\n', '\\ ')
                     refer_len = int(options.refer_text_len)
                     if len(refer_text) > refer_len:
                         refer_text = refer_text[:refer_len]+'...'
