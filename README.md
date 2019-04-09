@@ -53,7 +53,7 @@ If you run the server on another machine, it is recommended to set up IRC over T
 
 ### Serve file links via HTTPS
 
-A few more options: `--http-key /etc/telegramircd/key.pem --http-cert /etc/telegramircd/cert.pem --http-url https://127.1:9003`. File links will be shown as `https://127.1:9003/document/$id`.
+A few more options: `--http-key /etc/telegramircd/key.pem --http-cert /etc/telegramircd/cert.pem --http-url https://127.1:9003/document`. File links will be shown as `https://127.1:9003/document/$id`.
 
 You may create a CA certificate/key pair and use that to sign another certificate/key pair.
 
@@ -145,7 +145,7 @@ Supported IRC commands:
 - `--history-timezone <timezone>`, timezone for history messages, e.g. Europe/Madrid, default UTC
 - HTTP/WebSocket related options
   + `--http-cert cert.pem`, TLS certificate for HTTPS. You may concatenate certificate+key, specify a single PEM file and omit `--http-key`. Use HTTP if neither --http-cert nor --http-key is specified.
-  + `--http-url http://localhost`, Show file links as http://localhost/document/$id .
+  + `--http-url http://localhost/document`, Show file links as http://localhost/document/$id .
   + `--http-key key.pem`, TLS key for HTTPS.
   + `--http-listen 127.1 ::1`, change HTTPS listen address to `127.1` and `::1`, overriding `--listen`.
   + `--http-port 9003`, change HTTPS listen port to 9003.

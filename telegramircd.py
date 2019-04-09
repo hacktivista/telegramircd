@@ -131,7 +131,7 @@ class Web(object):
     def start(self, listens, port, loop):
         self.loop = loop
         self.app = aiohttp.web.Application()
-        self.app.router.add_route('GET', '/document/{id}', self.handle_document)
+        self.app.router.add_route('GET', '/' + options.http_path + '/{id}', self.handle_document)
         self.handler = self.app.make_handler()
         self.srv = []
         for i in listens:
@@ -2178,7 +2178,7 @@ class Server:
                 typ = 'unknown'
             if typ in ('document', 'photo'):
                 media_id = str(len(web.id2media))
-                text = '[{}] {}/document/{}{}'.format(typ, options.http_url, media_id, {'photo': '.jpg'}.get(typ, ''))
+                text = '[{}] {}/{}{}'.format(typ, options.http_url, media_id, {'photo': '.jpg'}.get(typ, ''))
                 if type == 'photo' and isinstance(msg.media.photo, tl.types.Photo):
                     for size in msg.media.photo.sizes:
                         if isinstance(size, tl.types.PhotoCachedSize):
@@ -2300,7 +2300,7 @@ def main():
     ap.add_argument('--history-time-format', type=str, default='', help='Time format prefixed to history messages')
     ap.add_argument('--history-timezone', type=str, default='UTC', help='Timezone for time on history messages')
     ap.add_argument('--http-cert', help='TLS certificate for HTTPS over TLS. You may concatenate certificate+key, specify a single PEM file and omit `--http-key`. Use HTTP if neither --http-cert nor --http-key is specified')
-    ap.add_argument('--http-url', default='http://localhost',
+    ap.add_argument('--http-url', default='http://localhost/document',
                     help='Show document links as http://localhost/document/$id')
     ap.add_argument('--http-key', help='TLS key for HTTPS over TLS')
     ap.add_argument('--http-listen', nargs='*',
@@ -2343,6 +2343,7 @@ def main():
     global options
     options = ap.parse_args()
     options.irc_nicks = [irc_lower(x) for x in options.irc_nicks]
+    options.http_path = options.http_url.split('/',3)[3]
 
     os.chdir(options.tg_session_dir)
     os.makedirs(options.tg_media_dir, exist_ok=True)
