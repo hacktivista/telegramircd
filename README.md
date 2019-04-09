@@ -91,6 +91,7 @@ You will join `+telegram` channel automatically and find your contact list there
   ```
 - `dialogs` show dialogs, last conversations including number of unread messages
 - `history <peer> [limit]` show last messages with limit, if no set 40 is by default
+- `mark_read <peer>` mark all messages for <peer> as read
 
 The server will be bound to one account, however, you may have more than one IRC clients connected to the server.
 

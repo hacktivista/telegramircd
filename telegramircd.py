@@ -1022,6 +1022,8 @@ class StatusChannel(Channel):
             self.respond(client, '  show last conversations (dialogs)')
             self.respond(client, 'history <peer> [limit]')
             self.respond(client, '  show last messages with limit, default 40')
+            self.respond(client, 'mark_read <peer>')
+            self.respond(client, '  mark all messages for <peer> as read')
         elif msg.startswith('status'):
             pattern = None
             ary = msg.split(' ', 1)
@@ -1111,6 +1113,22 @@ class StatusChannel(Channel):
                 return
             for ms in reversed(m.messages):
                 server.on_telegram_update_message(None, ms, history=True)
+        elif msg.startswith('mark_read'):
+            ary = msg.split()
+            la = len(ary)
+            if la != 2:
+                self.respond(client, 'Wrong parameters')
+                self.respond(client, 'Usage: mark_read <peer>')
+                return
+            req_peer = ary[1]
+            try:
+                any_peer = server.name2special_room[req_peer.lower()].peer
+            except:
+                any_peer = req_peer
+            try:
+                web.mark_read(any_peer, max_id=0)
+            except:
+                self.respond(client, 'Entity not found')
         else:
             m = re.match(r'eval (.+)$', msg.strip())
             if m:
