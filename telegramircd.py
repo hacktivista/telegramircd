@@ -1020,8 +1020,8 @@ class StatusChannel(Channel):
             self.respond(client, '  show contacts/users/chats/channels')
             self.respond(client, 'dialogs')
             self.respond(client, '  show last conversations (dialogs)')
-            self.respond(client, 'history <peer> [limit]')
-            self.respond(client, '  show last messages with limit, default 40')
+            self.respond(client, 'history <peer> [<limit>|unread]')
+            self.respond(client, '  show last messages with limit, default 40, or unread messages')
             self.respond(client, 'mark_read <peer>')
             self.respond(client, '  mark all messages for <peer> as read')
         elif msg.startswith('status'):
@@ -1088,13 +1088,41 @@ class StatusChannel(Channel):
                 self.respond(client, 'Wrong parameters')
                 self.respond(client, 'Usage: history <peer> [limit]')
                 return
+            req_peer = ary[1].lower()
             if la == 3:
-                req_limit = int(ary[2])
+                if ary[2] == 'unread':
+                    last_date = None
+                    chunk_size = 20
+                    d = web.proc(tl.functions.messages.GetDialogsRequest(
+                        offset_date=last_date,
+                        offset_id=0,
+                        offset_peer=tl.types.InputPeerEmpty(),
+                        limit=chunk_size,
+                        hash=0
+                    ))
+                    for ds in d.dialogs:
+                        if type(ds.peer) is tl.types.PeerUser:
+                            id = ds.peer.user_id
+                            u = server.user_id2special_user[id]
+                            name = u.username or u.print_name
+                        elif type(ds.peer) is tl.types.PeerChat:
+                            id = ds.peer.chat_id
+                            name = server.peer_id2special_room[id].name
+                        else:
+                            id = ds.peer.channel_id
+                            name = server.peer_id2special_room[id].name
+                        if name.lower() == req_peer:
+                            req_limit = ds.unread_count
+                            break
+                    else:
+                        self.respond(client, 'Unread not found')
+                        return
+                else:
+                    req_limit = int(ary[2])
             else:
                 req_limit = 40
-            req_peer = ary[1]
             try:
-                any_peer = server.name2special_room[req_peer.lower()].peer
+                any_peer = server.name2special_room[req_peer].peer
             except:
                 any_peer = req_peer
             try:
