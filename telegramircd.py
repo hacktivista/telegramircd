@@ -1121,6 +1121,8 @@ class StatusChannel(Channel):
                     req_limit = int(ary[2])
             else:
                 req_limit = 40
+            if req_limit == 0:
+                return
             try:
                 any_peer = server.name2special_room[req_peer].peer
             except:
