@@ -1356,6 +1356,8 @@ class SpecialChannel(Channel):
                         client.err_usernotinchannel(nick, self.name)
                     else:
                         server.loop.create_task(web.channel_set_admin(client, self, user, {'+h':1,'-h':0,'+o':2,'-o':0}[args[0]]))
+            elif args[0] == 'b':
+                client.rpl_endofbanlist(self.name)
             elif re.match('[-+]', args[0]):
                 client.err_unknownmode(args[0][1] if len(args[0]) > 1 else '')
             else:
@@ -1511,6 +1513,9 @@ class Client:
 
     def rpl_endofnames(self, channelname):
         self.reply('366 {} {} :End of NAMES list', self.nick, channelname)
+
+    def rpl_endofbanlist(self, channelname):
+        self.reply('368 {} {} :End of channel ban list', self.nick, channelname)
 
     def rpl_info(self, fmt, *args):
         line = fmt.format(*args) if args else fmt
