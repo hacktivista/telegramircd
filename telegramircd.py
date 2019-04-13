@@ -879,7 +879,7 @@ class Channel:
     def on_kick(self, client, nick, reason):
         client.err_chanoprivsneeded(self.name)
 
-    def on_mode(self, client):
+    def on_mode(self, client, *args):
         client.rpl_channelmodeis(self.name, self.mode)
 
     def on_names(self, client):
@@ -1661,7 +1661,7 @@ class Client:
                 break
             if not line:
                 return
-            line = line.rstrip(b'\r\n').decode('utf-8', 'ignore')
+            line = line.rstrip(b'\r\n').strip().decode('utf-8', 'ignore')
             sent_ping = False
             if not line:
                 continue
