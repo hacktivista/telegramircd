@@ -136,6 +136,7 @@ Supported IRC commands:
 - `/part [$channel]`, no longer receive messages from the channel. It just borrows the command `/part` and it will not leave the group.
 - `/query $nick`, open a chat window with `$nick`.
 - `/topic topic`, change the topic of a group. Because IRC does not support renaming of a channel, you will leave the channel with the old name and join a channel with the new name.
+- `/userhost $nick[ $nick...]`, see information about `$nick`...
 - `/who $channel`, see the member list.
 
 ## Server options

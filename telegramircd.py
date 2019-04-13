@@ -69,6 +69,7 @@ class Web(object):
         self.proc = None
         self.authorized = False
         self.two_step = False
+        self.userhost_response = ''
 
     async def handle_media(self, typ, request):
         id = re.sub(r'\..*', '', request.match_info.get('id'))
@@ -760,6 +761,18 @@ class Command:
             client.err_nosuchnick(target)
             return
         client.reply('318 {} {} :End of WHOIS list', client.nick, target)
+
+    @staticmethod
+    def userhost(client, *args):
+        for target in args:
+            if server.has_nick(target):
+                server.get_nick(target).on_userhost(client)
+            else:
+                client.err_nosuchnick(target)
+                web.userhost_response = ''
+                return
+        else:
+            server.get_nick(target).on_userhost(client, end=True)
 
     @classmethod
     def notice_or_privmsg(cls, client, command, *args):
@@ -1738,6 +1751,15 @@ class Client:
                      ' '.join(name for name in
                               client.channels.keys() & self.channels.keys()))
 
+    def on_userhost(self, client, end=False):
+        if end:
+            client.reply('302 {} :{}', client.nick, web.userhost_response)
+            web.userhost_response = ''
+        else:
+            if web.userhost_response != '':
+                web.userhost_response += ' '
+            web.userhost_response += self.nick + '=+' + self.user + '@' + self.host
+
 
 class TelegramUpdate:
     @staticmethod
@@ -1982,6 +2004,14 @@ class SpecialUser:
         if 'a' in self.mode:
             client.reply('301 {} {} away', client.nick, self.nick)
 
+    def on_userhost(self, client, end=False):
+        if end:
+            client.reply('302 {} :{}', client.nick, web.userhost_response)
+            web.userhost_response = ''
+        else:
+            if web.userhost_response != '':
+                web.userhost_response += ' '
+            web.userhost_response += self.nick + '=+' + str(self.user_id) + '@' + im_name
 
 class Server:
     valid_nickname = re.compile(r"^[][\`_^{|}A-Za-z][][\`_^{|}A-Za-z0-9-]{0,50}$")
