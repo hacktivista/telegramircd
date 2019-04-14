@@ -1010,12 +1010,13 @@ class StatusChannel(Channel):
         self.topic = "Your friends are listed here. Messages wont't be broadcasted to them. Type 'help' to see available commands"
         assert not StatusChannel.instance
         StatusChannel.instance = self
+        self.pseudouser = 'root!root'
 
     def respond(self, client, fmt, *args):
         if args:
-            client.write((':{} PRIVMSG {} :'+fmt).format(self.name, self.name, *args))
+            client.write((':{} PRIVMSG {} :'+fmt).format(self.pseudouser + '@' + server.name, self.name, *args))
         else:
-            client.write((':{} PRIVMSG {} :').format(self.name, self.name)+fmt)
+            client.write((':{} PRIVMSG {} :').format(self.pseudouser + '@' + server.name, self.name)+fmt)
 
     def multicast_group(self, source):
         return (x for x in self.members if isinstance(x, Client))
