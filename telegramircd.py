@@ -789,6 +789,7 @@ class Command:
             user = server.get_nick(target)
             if isinstance(user, Client):
                 user.write(':{} PRIVMSG {} :{}'.format(client.prefix, user.nick, msg))
+                web.proc.send_message(web.proc.get_me().id, msg)
             else:
                 user.on_notice_or_privmsg(client, command, msg)
         # IRC channel or special chatroom
