@@ -2245,6 +2245,9 @@ class Server:
                     typ = 'WebPagePending'
                     text = '{}'.format(webpage.id)
                     web.webpage_id2sender_to[webpage.id] = (sender, to)
+                elif isinstance(webpage, tl.types.WebPageEmpty):
+                    typ = 'WebPageEmpty'
+                    text = ''
             else:
                 typ = 'unknown'
             if typ in ('document', 'photo'):
