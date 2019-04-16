@@ -2229,22 +2229,27 @@ class Server:
                 typ = 'empty'
             elif isinstance(msg.media, tl.types.MessageMediaGeo):
                 typ = 'geo'
-                text = '[{}] latitude:{} longitude:{}'.format(typ, msg.media.geo.long, msg.media.geo.lat)
+                text = 'latitude:{} longitude:{}'.format(msg.media.geo.long, msg.media.geo.lat)
             elif isinstance(msg.media, tl.types.MessageMediaPhoto):
                 typ = 'photo'
             elif isinstance(msg.media, tl.types.MessageMediaWebPage):
                 typ = 'webpage'
                 webpage = msg.media.webpage
                 if isinstance(webpage, tl.types.WebPage):
-                    text = '[{}] {} {}'.format(typ, webpage.url.replace('\n', '\\n'), webpage.title)
+                    if msg.message != webpage.url:
+                        wurl = ' [' + webpage.url.replace('\n', '\\ ') + ']'
+                    else:
+                        wurl = ''
+                    text = '{}{}'.format(webpage.title, wurl)
                 elif isinstance(webpage, tl.types.WebPagePending):
-                    text = '[WebPagePending] {}'.format(webpage.id)
+                    typ = 'WebPagePending'
+                    text = '{}'.format(webpage.id)
                     web.webpage_id2sender_to[webpage.id] = (sender, to)
             else:
                 typ = 'unknown'
             if typ in ('document', 'photo'):
                 media_id = str(len(web.id2media))
-                text = '[{}] {}/{}{}'.format(typ, options.http_url, media_id, {'photo': '.jpg'}.get(typ, ''))
+                text = '{}/{}{}'.format(options.http_url, media_id, {'photo': '.jpg'}.get(typ, ''))
                 if type == 'photo' and isinstance(msg.media.photo, tl.types.Photo):
                     for size in msg.media.photo.sizes:
                         if isinstance(size, tl.types.PhotoCachedSize):
@@ -2253,11 +2258,13 @@ class Server:
                             text += ' {}x{},{}B'.format(size.w, size.h, size.size)
                 web.id2media[media_id] = (msg.media, None)
             elif text is None:
-                text = '[{}] {}'.format(type(msg.media).__name__, msg.media.to_dict())
+                typ = type(msg.media).__name__
+                text = '{}'.format(msg.media.to_dict())
             if getattr(msg.media, 'caption', None):
-                text += ' | ' + msg.media.caption.replace('\n', '\\ ')
+                text = msg.media.caption.replace('\n', '\\ ') + ' | ' + text
             if msg.message:
-                text += ' | ' + msg.message.replace('\n', '\\ ')
+                text = msg.message.replace('\n', '\\ ') + ' | ' + text
+            text = '[{}] '.format(typ) + text
         else:
             text = msg.message
 
