@@ -155,6 +155,7 @@ Supported IRC commands:
   + `--ignore-topic 'fo[o]' bar`, short option `-I`, do not auto join channels whose topics match regex `fo[o]` or `bar`
 - `--ignore-bot`, ignore private messages with bots
 - IRC related options
+  + `--encoding-input`, character encoding of input from IRC, default UTF-8.
   + `--irc-cert cert.pem`, TLS certificate for IRC over TLS. You may concatenate certificate+key, specify a single PEM file and omit `--irc-key`. Use plain IRC if neither --irc-cert nor --irc-key is specified.
   + `--irc-key key.pem`, TLS key for IRC over TLS.
   + `--irc-listen 127.1 ::1`, change IRC listen address to `127.1` and `::1`, overriding `--listen`.

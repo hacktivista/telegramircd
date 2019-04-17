@@ -1676,7 +1676,7 @@ class Client:
                 break
             if not line:
                 return
-            line = line.rstrip(b'\r\n').strip().decode('utf-8', 'ignore')
+            line = line.rstrip(b'\r\n').strip().decode(options.encoding_input, 'ignore')
             sent_ping = False
             if not line:
                 continue
@@ -2373,6 +2373,7 @@ def main():
     ap.add('-c', '--config', is_config_file=True, help='config file path')
     ap.add_argument('-d', '--debug', action='store_true', help='run ipdb on uncaught exception')
     ap.add_argument('--dcc-send', type=int, default=10*1024*1024, help='size limit receiving from DCC SEND. 0: disable DCC SEND')
+    ap.add_argument('--encoding-input', type=str, default='utf-8', help='Character encoding of input from IRC')
     ap.add_argument('--heartbeat', type=int, default=30, help='time to wait for IRC commands. The server will send PING and close the connection after another timeout of equal duration if no commands is received.')
     ap.add_argument('--history-time-format', type=str, default='', help='Time format prefixed to history messages')
     ap.add_argument('--history-timezone', type=str, default='UTC', help='Timezone for time on history messages')

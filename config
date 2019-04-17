@@ -57,3 +57,6 @@ irc-port: 6669
 #history-time-format: '[%d %H:%M] '
 # Set timezone for history messages, default UTC
 #history-timezone: Europe/Madrid
+
+# Set the encoding of input from IRC, default utf-8
+#encoding-input: iso-8859-1
