@@ -2218,6 +2218,10 @@ class Server:
         sender.max_id = msg.id
         record = {'id': msg.id, 'date': date, 'from': sender, 'to': to, 'message': msg.message, 'inferred': False}
         web.append_history(record)
+        if getattr(msg, 'edit_date', None):
+            edited = ' [edited]'
+        else:
+            edited = ''
         # UpdateShort{,Chat}Message do not have update.media
         # UpdateNewChannelMessage may have {media: None}
         if getattr(msg, 'media', None):
@@ -2268,9 +2272,9 @@ class Server:
                 text = msg.media.caption.replace('\n', '\\ ') + ' | ' + text
             if msg.message:
                 text = msg.message.replace('\n', '\\ ') + ' | ' + text
-            text = '[{}] '.format(typ) + text
+            text = '[{}] '.format(typ) + text + edited
         else:
-            text = msg.message
+            text = msg.message + edited
 
         self.deliver_message(msg.id, sender, to, msg.date, text, history, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
 
