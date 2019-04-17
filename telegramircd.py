@@ -1143,20 +1143,11 @@ class StatusChannel(Channel):
             except:
                 any_peer = req_peer
             try:
-                m = web.proc(tl.functions.messages.GetHistoryRequest(
-                    peer=any_peer,
-                    limit=req_limit,
-                    max_id=0,
-                    min_id=0,
-                    hash=0,
-                    add_offset=0,
-                    offset_date=None,
-                    offset_id=0
-                ))
+                m = web.proc.iter_messages(any_peer,limit=req_limit)
             except:
                 self.respond(client, 'Entity not found')
                 return
-            for ms in reversed(m.messages):
+            for ms in reversed([x for x in m]):
                 server.on_telegram_update_message(None, ms, history=True)
         elif msg.startswith('mark_read'):
             ary = msg.split()
