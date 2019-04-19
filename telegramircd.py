@@ -1138,10 +1138,13 @@ class StatusChannel(Channel):
                 req_limit = 40
             if req_limit == 0:
                 return
-            try:
-                any_peer = server.name2special_room[req_peer].peer
-            except:
-                any_peer = req_peer
+            if req_peer == client.nick:
+                any_peer = 'me'
+            else:
+                try:
+                    any_peer = server.name2special_room[req_peer].peer
+                except:
+                    any_peer = req_peer
             m = web.proc.iter_messages(any_peer,limit=req_limit)
             try:
                 xx = [x for x in m]
