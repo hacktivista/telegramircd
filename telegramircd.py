@@ -3,7 +3,7 @@ from configargparse import ArgParser, Namespace
 #from ipdb import set_trace as bp
 from collections import deque
 from datetime import datetime, timezone
-from itertools import chain
+from itertools import chain, count
 import subprocess
 
 from telethon import TelegramClient
@@ -2208,11 +2208,16 @@ class Server:
         date = msg.date.replace(tzinfo=timezone.utc)
         sender.max_id = msg.id
         record = {'id': msg.id, 'date': date, 'from': sender, 'to': to, 'message': msg.message, 'inferred': False}
-        web.append_history(record)
-        if getattr(msg, 'edit_date', None):
-            edited = ' [edited]'
+        edited = getattr(msg, 'edit_date', None)
+        if edited:
+            try:
+                record['messages_edited'] = web.id2message[msg.id]['messages_edited']
+                record['messages_edited'].append(web.id2message[msg.id]['message'])
+            except:
+                pass
         else:
-            edited = ''
+            record['messages_edited'] = []
+        web.append_history(record)
         # UpdateShort{,Chat}Message do not have update.media
         # UpdateNewChannelMessage may have {media: None}
         if getattr(msg, 'media', None):
@@ -2263,13 +2268,13 @@ class Server:
                 text = msg.media.caption.replace('\n', '\\ ') + ' | ' + text
             if msg.message:
                 text = msg.message.replace('\n', '\\ ') + ' | ' + text
-            text = '[{}] '.format(typ) + text + edited
+            text = '[{}] '.format(typ) + text
         else:
-            text = msg.message + edited
+            text = msg.message
 
-        self.deliver_message(msg.id, sender, to, msg.date, text, history, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
+        self.deliver_message(msg.id, sender, to, msg.date, text, history, edited, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
 
-    def deliver_message(self, msg_id, sender, to, date, text, history, fwd_from=None, reply_to_msg_id=None):
+    def deliver_message(self, msg_id, sender, to, date, text, history, edited, fwd_from=None, reply_to_msg_id=None, history_edited=False, index_edited=0):
         for line in text.splitlines(1):
             line = line.replace('\n', ' \\')
             if fwd_from is not None:
@@ -2305,6 +2310,21 @@ class Server:
                         line = '|Re {}: {}| {}'.format(
                             client.nick if user == server else user.nick, refer_text, line)
                         break
+            if edited:
+                if history and not history_edited:
+                    try:
+                        edited_pass = False
+                        for (message_old, idx) in zip(web.id2message[msg_id]['messages_edited'], count()):
+                            self.deliver_message(msg_id, sender, to, date, message_old, history, edited_pass, fwd_from, reply_to_msg_id, True, idx)
+                            edited_pass = True
+                        return
+                    except:
+                        pass
+                try:
+                    message_old = web.id2message[msg_id]['messages_edited'][index_edited-1]
+                except:
+                    message_old = ''
+                line = '|Edited {}| {}'.format(message_old, line)
             if history:
                 date_local = date.astimezone(pytz.timezone(options.history_timezone))
                 line = date_local.strftime(options.history_time_format).strip('"\'') + line
