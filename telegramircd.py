@@ -1142,13 +1142,17 @@ class StatusChannel(Channel):
                 any_peer = server.name2special_room[req_peer].peer
             except:
                 any_peer = req_peer
+            m = web.proc.iter_messages(any_peer,limit=req_limit)
             try:
-                m = web.proc.iter_messages(any_peer,limit=req_limit)
+                xx = [x for x in m]
+                if xx == []:
+                    self.respond(client, 'No messages with user or channel')
+                    return
+                for ms in reversed(xx):
+                    server.on_telegram_update_message(None, ms, history=True)
             except:
                 self.respond(client, 'Entity not found')
                 return
-            for ms in reversed([x for x in m]):
-                server.on_telegram_update_message(None, ms, history=True)
         elif msg.startswith('mark_read'):
             ary = msg.split()
             la = len(ary)
