@@ -1118,8 +1118,11 @@ class StatusChannel(Channel):
                     for ds in d.dialogs:
                         if type(ds.peer) is tl.types.PeerUser:
                             id = ds.peer.user_id
-                            u = server.user_id2special_user[id]
-                            name = u.username or u.print_name
+                            try:
+                                u = server.user_id2special_user[id]
+                                name = u.username or u.print_name
+                            except:
+                                name = client.nick
                         elif type(ds.peer) is tl.types.PeerChat:
                             id = ds.peer.chat_id
                             name = server.peer_id2special_room[id].name
