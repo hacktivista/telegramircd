@@ -2217,16 +2217,20 @@ class Server:
 
         date = msg.date.replace(tzinfo=timezone.utc)
         sender.max_id = msg.id
-        record = {'id': msg.id, 'date': date, 'from': sender, 'to': to, 'message': msg.message, 'inferred': False}
+        record = {'id': msg.id, 'date': date, 'dates_edited': [], 'from': sender, 'to': to, 'message': msg.message, 'messages_edited': [], 'inferred': False}
         edited = getattr(msg, 'edit_date', None)
         if edited:
             try:
                 record['messages_edited'] = web.id2message[msg.id]['messages_edited']
-                record['messages_edited'].append(web.id2message[msg.id]['message'])
             except:
                 pass
-        else:
-            record['messages_edited'] = []
+            try:
+                record['dates_edited'] = web.id2message[msg.id]['dates_edited']
+            except:
+                pass
+            if not history:
+                record['messages_edited'].append(web.id2message[msg.id]['message'])
+                record['dates_edited'].append(msg.edit_date)
         web.append_history(record)
         # UpdateShort{,Chat}Message do not have update.media
         # UpdateNewChannelMessage may have {media: None}
@@ -2323,17 +2327,22 @@ class Server:
             if edited:
                 if history and not history_edited:
                     try:
-                        edited_pass = False
-                        for (message_old, idx) in zip(web.id2message[msg_id]['messages_edited'], count()):
-                            self.deliver_message(msg_id, sender, to, date, message_old, history, edited_pass, fwd_from, reply_to_msg_id, True, idx)
-                            edited_pass = True
-                        return
+                        edit_date = False
+                        messages_edited = web.id2message[msg_id]['messages_edited']
+                        if messages_edited == []:
+                            raise
+                        dates_edited = [date] + web.id2message[msg_id]['dates_edited'][:-1]
+                        for (date_old, message_old, idx) in zip(dates_edited, messages_edited, count()):
+                            self.deliver_message(msg_id, sender, to, date_old, message_old, history, edit_date, fwd_from, reply_to_msg_id, True, idx)
+                            edit_date = date_old
+                        date = edited
                     except:
                         pass
                 try:
                     message_old = web.id2message[msg_id]['messages_edited'][index_edited-1]
                 except:
-                    message_old = ''
+                    date_edited_local = edited.astimezone(pytz.timezone(options.history_timezone))
+                    message_old = date_edited_local.strftime(options.history_time_format).strip('"\'')
                 line = '|Edited {}| {}'.format(message_old, line)
             if history:
                 date_local = date.astimezone(pytz.timezone(options.history_timezone))
