@@ -2286,9 +2286,11 @@ class Server:
         else:
             text = msg.message
 
-        self.deliver_message(msg.id, sender, to, msg.date, text, history, edited, fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
+        self.deliver_message(msg.id, sender, to, msg.date, text, history, edited,
+                             fwd_from=msg.fwd_from, reply_to_msg_id=msg.reply_to_msg_id)
 
-    def deliver_message(self, msg_id, sender, to, date, text, history, edited, fwd_from=None, reply_to_msg_id=None, history_edited=False, index_edited=0):
+    def deliver_message(self, msg_id, sender, to, date, text, history=False, edited=False,
+                        fwd_from=None, reply_to_msg_id=None, history_edited=False, index_edited=0):
         for line in text.splitlines(1):
             line = line.replace('\n', ' \\')
             if fwd_from is not None:
@@ -2333,7 +2335,8 @@ class Server:
                             raise
                         dates_edited = [date] + web.id2message[msg_id]['dates_edited'][:-1]
                         for (date_old, message_old, idx) in zip(dates_edited, messages_edited, count()):
-                            self.deliver_message(msg_id, sender, to, date_old, message_old, history, edit_date, fwd_from, reply_to_msg_id, True, idx)
+                            self.deliver_message(msg_id, sender, to, date_old, message_old, history, edit_date,
+                                                 fwd_from, reply_to_msg_id, True, idx)
                             edit_date = date_old
                         date = edited
                     except:
