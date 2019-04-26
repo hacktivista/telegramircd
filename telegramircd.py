@@ -1036,8 +1036,8 @@ class StatusChannel(Channel):
             self.respond(client, '  show contacts/users/chats/channels')
             self.respond(client, 'dialogs')
             self.respond(client, '  show last conversations (dialogs)')
-            self.respond(client, 'history <peer> [<limit>|unread]')
-            self.respond(client, '  show last messages with limit, default 40, or unread messages')
+            self.respond(client, 'history <peer> [<limit>|unread[+N]]')
+            self.respond(client, '  show last messages with limit, default 40, or unread[+N] messages')
             self.respond(client, 'mark_read <peer>')
             self.respond(client, '  mark all messages for <peer> as read')
         elif msg.startswith('status'):
@@ -1106,7 +1106,12 @@ class StatusChannel(Channel):
                 return
             req_peer = ary[1].lower()
             if la == 3:
-                if ary[2] == 'unread':
+                ua = (ary[2] + '+').split('+', 2)
+                if ua[0] == 'unread':
+                    if ua[1].isdigit():
+                        add_limit = int(ua[1])
+                    else:
+                        add_limit = 0
                     last_date = None
                     chunk_size = 20
                     d = web.proc(tl.functions.messages.GetDialogsRequest(
@@ -1131,7 +1136,7 @@ class StatusChannel(Channel):
                             id = ds.peer.channel_id
                             name = server.peer_id2special_room[id].name
                         if name.lower() == req_peer:
-                            req_limit = ds.unread_count
+                            req_limit = ds.unread_count + add_limit
                             break
                     else:
                         self.respond(client, 'Unread not found')

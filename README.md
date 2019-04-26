@@ -90,7 +90,7 @@ You will join `+telegram` channel automatically and find your contact list there
   eval client.peer_id2special_user
   ```
 - `dialogs` show dialogs, last conversations including number of unread messages
-- `history <peer> [<limit>|unread]` show last messages with limit or 'unread' for unread messages, if no set 40 is by default
+- `history <peer> [<limit>|unread[+N]]` show last messages with limit or 'unread' for unread messages, 'unread+N' (without spaces) shows unread plus N number of messages (e.g. unread+5), if no set 40 is by default
 - `mark_read <peer>` mark all messages for <peer> as read
 
 The server will be bound to one account, however, you may have more than one IRC clients connected to the server.
