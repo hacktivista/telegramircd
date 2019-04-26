@@ -176,6 +176,9 @@ Supported IRC commands:
   + `always`, `mark_read` all messages
   + `reply`, default: `mark_read` when sending messages to the peer
   + `never`, never
+- Mention representation options
+  + `mention-prefix`, prefix of a mention (@username), if unset, the default @ will be unchanged, if 'Empty' will be empty
+  + `mention-suffix`, suffix of a mention (@username), default empty
 - `--paste-wait`, PRIVMSG lines will be hold for up to `$paste_wait` seconds, lines in this interval will be packed to a multiline message
 - `--refer-text-len`, Set the length of refer texts in replies
 - `--sasl-password pass`, set the SASL password to `pass`.

@@ -288,6 +288,7 @@ class Web(object):
 
     def get_self(self):
         data = self.proc.get_me()
+        server.username = data.username
         server.user_id = data.id
 
     def init(self):
@@ -2037,6 +2038,7 @@ class Server:
         self.last_text_by_client = weakref.WeakKeyDictionary()
         self.max_id = 0
         self.user_id = 0
+        self.username = ''
         self.name2special_room = {}    # name -> Telegram chatroom
         self.peer_id2special_room = {} # peer_id -> SpecialChannel
         self.user_id2special_user = {} # peer_id -> SpecialUser
@@ -2347,11 +2349,38 @@ class Server:
                     date_edited_local = edited.astimezone(pytz.timezone(options.history_timezone))
                     message_old = date_edited_local.strftime(options.history_time_format).strip('"\'')
                 line = '|Edited {}| {}'.format(message_old, line)
+
+            client = server.preferred_client()
+
+            # mention: @username -> prefix + username/nick + suffix
+            if options.mention_prefix != None or options.mention_suffix != None:
+                pref = options.mention_prefix or ''
+                suf = options.mention_suffix or ''
+                if pref == 'Empty':
+                    pref = ''
+                nline = n = ''
+                ch = '@'
+                j = 0
+                i = line.find('@')
+                while i != -1:
+                    if i == 0 or line[i-1:i] == ' ':
+                        n = line[i:].split()[0][1:].rstrip(',.;:')
+                        ch = '@' + n
+                        if n == self.username:
+                            ch = pref + client.nick + suf
+                        elif n.lower() in self.nick2special_user:
+                            ch = pref + n + suf
+                    nline = nline + line[j:i] + ch
+                    j = i + len(n) + 1
+                    i = line.find('@', j)
+                    n = ''
+                    ch = '@'
+                line = nline + line[j:]
+
             if history:
                 date_local = date.astimezone(pytz.timezone(options.history_timezone))
                 line = date_local.strftime(options.history_time_format).strip('"\'') + line
 
-            client = server.preferred_client()
             if client:
                 where = sender if to == server else to
                 irc_log(where, client if where == server else where, date,
@@ -2443,6 +2472,8 @@ def main():
     ap.add_argument('--logger-mask', help='WeeChat logger.mask.irc')
     ap.add_argument('--logger-time-format', default='%H:%M', help='WeeChat logger.file.time_format')
     ap.add_argument('--mark-read', choices=('always', 'reply', 'never'), default='reply', help='when to mark_read private messages from users. always: mark_read all messages; reply: mark_read when sending messages to the peer; never: never mark_read. default: reply'),
+    ap.add_argument('--mention-prefix', default=None, help='Prefix of a mention (@username), if unset, the default @ will be unchanged, if \'Empty\' will be empty'),
+    ap.add_argument('--mention-suffix', default=None, help='Suffix of a mention (@username), default empty'),
     ap.add_argument('--paste-wait', type=float, default=0.1, help='PRIVMSG lines will be hold for up to $paste_wait seconds, lines in this interval will be packed to a multiline message')
     ap.add_argument('-q', '--quiet', action='store_const', const=logging.WARN, dest='loglevel')
     ap.add_argument('--refer-text-len', default=8, help='Set the length of refer texts in replies')

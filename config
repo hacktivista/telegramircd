@@ -60,3 +60,11 @@ irc-port: 6669
 
 # Set the encoding of input from IRC, default utf-8
 #encoding-input: iso-8859-1
+
+# Set prefix and suffix of mentions (@username)
+# if prefix is unset, the default @ will be unchanged
+# example: *username*
+#mention-prefix: *
+#mention-suffix: *
+# or prefix can be 'Empty' for no prefix
+#mention-prefix: Empty
