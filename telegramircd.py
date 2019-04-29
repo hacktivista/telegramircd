@@ -2396,24 +2396,42 @@ class Server:
                     if c not in to.joined and 'm' not in to.mode:
                         if options.join in ('all', 'auto') and c not in to.explicit_parted or options.join == 'new':
                             c.auto_join(to)
-            for client in server.auth_clients():
-                #if isinstance(to, Channel) and client not in to.joined or (
-                #        'echo-message' not in client.capabilities and
-                #        sender == server and 'media' not in data and
-                #        data['text'] == to.last_text_by_client.get(client)):
-                #    continue
-                sender_prefix = client.prefix if sender == server else sender.prefix
-                to_nick = client.nick if to == server else to.nick
-                line = ':{} PRIVMSG {} :{}'.format(sender_prefix, to_nick, line)
-                tags = []
-                if msg_id is not None:
-                    if 'draft/message-tags' in client.capabilities:
-                        tags.append('draft/msgid={}'.format(msg_id))
-                    if 'server-time' in client.capabilities:
-                        tags.append('time={}Z'.format(date.strftime('%FT%T.%f')[:23]))
-                    if tags:
-                        line = '@{} {}'.format(';'.join(tags), line)
-                client.write(line)
+
+            # Split lines longer than split_messages_longer option
+            ll = len(line)
+            prep_comp = 3
+            if options.split_messages_longer and ll > options.split_messages_longer:
+               max_line = options.split_messages_longer - prep_comp
+            else:
+               max_line = ll
+            long_line = line
+            j_line = 0
+            prep = ''
+
+            for i_line in chain(range(max_line, ll, max_line), [ll]):
+                line = prep + long_line[j_line:i_line + prep_comp]
+                j_line = i_line + prep_comp
+                prep = '[+]'
+
+                for client in server.auth_clients():
+                    #if isinstance(to, Channel) and client not in to.joined or (
+                    #        'echo-message' not in client.capabilities and
+                    #        sender == server and 'media' not in data and
+                    #        data['text'] == to.last_text_by_client.get(client)):
+                    #    continue
+                    sender_prefix = client.prefix if sender == server else sender.prefix
+                    to_nick = client.nick if to == server else to.nick
+                    line = ':{} PRIVMSG {} :{}'.format(sender_prefix, to_nick, line)
+                    tags = []
+                    if msg_id is not None:
+                        if 'draft/message-tags' in client.capabilities:
+                            tags.append('draft/msgid={}'.format(msg_id))
+                        if 'server-time' in client.capabilities:
+                            tags.append('time={}Z'.format(date.strftime('%FT%T.%f')[:23]))
+                        if tags:
+                            line = '@{} {}'.format(';'.join(tags), line)
+                    client.write(line)
+
         if msg_id is not None and options.mark_read == 'always' and isinstance(sender, SpecialUser):
             if to is server:
                 if sender is not server:
@@ -2484,6 +2502,7 @@ def main():
     ap.add_argument('--refer-text-len', default=8, help='Set the length of refer texts in replies')
     ap.add_argument('--sasl-password', default='', help='Set the SASL password')
     ap.add_argument('--special-channel-prefix', choices=('&', '!', '#', '##'), default='&', help='prefix for SpecialChannel')
+    ap.add_argument('--split-messages-longer', type=int, default=0, help='Split messages longer than number of characters, if 0 or unset no messages will be split')
     ap.add_argument('--tg-api-id', type=int, help='App api_id on https://my.telegram.org/apps')
     ap.add_argument('--tg-api-hash', help='App api_hash on https://my.telegram.org/apps')
     ap.add_argument('--tg-media-dir', default='/tmp/telegramircd', help='directory of media files')

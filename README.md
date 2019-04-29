@@ -162,6 +162,7 @@ Supported IRC commands:
   + `--irc-nicks ray ray1`, reverved nicks for clients. `SpecialUser` will not have these nicks.
   + `--irc-password pass`, set the connection password to `pass`.
   + `--irc-port 6669`, IRC server listen port.
+  + `--split-messages-longer <num>`, messages longer than `<num>` characters will be split in several IRC messages, this may be necessary for some IRC clients that adhere to RFC-2812 that specifies a total limit of 510 characters, if 0 or unset the message will not be split. Messages split will be marked with the prefix `[+]`.
 - Join mode, short option `-j`
   + `--join auto`, default: join the channel upon receiving the first message, no rejoin after issuing `/part` and receiving messages later
   + `--join all`: join all the channels
