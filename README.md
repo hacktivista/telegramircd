@@ -180,6 +180,7 @@ Supported IRC commands:
 - Mention representation options
   + `mention-prefix`, prefix of a mention (@username), if unset, the default @ will be unchanged, if 'Empty' will be empty
   + `mention-suffix`, suffix of a mention (@username), default empty
+- `--emoji-to-ascii`, set True to convert UTF-8 emojis to ASCII emoticons on IRC messages e.g. :slightly_smiling_face: will be converted to `":)"` (quoted to distinguish from real ASCII emoticons)
 - `--paste-wait`, PRIVMSG lines will be hold for up to `$paste_wait` seconds, lines in this interval will be packed to a multiline message
 - `--refer-text-len`, Set the length of refer texts in replies
 - `--sasl-password pass`, set the SASL password to `pass`.

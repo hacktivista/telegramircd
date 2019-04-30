@@ -75,3 +75,7 @@ irc-port: 6669
 # to/from parameters (leaving about 400 characters for the payload)
 # but some IRC clients accept longer messages
 split-messages-longer: 400
+
+# Set True to convert UTF-8 emojis to ASCII emoticons when sending to IRC
+# (mapped in file emoji2emoticon.py)
+#emoji-to-ascii: True

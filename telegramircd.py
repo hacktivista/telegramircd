@@ -17,6 +17,8 @@ import telethon.tl.functions.messages
 import aiohttp.web, asyncio, base64, inspect, json, logging.handlers, magic, os, pprint, pytz, random, re, \
     shlex, signal, socket, ssl, string, sys, tempfile, time, traceback, uuid, weakref
 
+from emoji2emoticon import emo
+
 logger = logging.getLogger('telegramircd')
 im_name = 'Telegram'
 capabilities = set(['away-notify', 'draft/message-tags', 'echo-message', 'multi-prefix', 'sasl', 'server-time'])  # http://ircv3.net/irc/
@@ -2397,6 +2399,11 @@ class Server:
                         if options.join in ('all', 'auto') and c not in to.explicit_parted or options.join == 'new':
                             c.auto_join(to)
 
+            if options.emoji_to_ascii:
+                for utf_emo in emo:
+                    if utf_emo in line:
+                        line = line.replace(utf_emo, emo[utf_emo])
+
             # Split lines longer than split_messages_longer option
             ll = len(line)
             prep_comp = 3
@@ -2461,6 +2468,7 @@ def main():
     ap = ArgParser(description='telegramircd brings Telegram to IRC clients')
     ap.add('-c', '--config', is_config_file=True, help='config file path')
     ap.add_argument('-d', '--debug', action='store_true', help='run ipdb on uncaught exception')
+    ap.add_argument('--emoji-to-ascii', type=bool, default=False, help='If True convert UTF-8 emojis to ASCII emoticons in IRC output')
     ap.add_argument('--dcc-send', type=int, default=10*1024*1024, help='size limit receiving from DCC SEND. 0: disable DCC SEND')
     ap.add_argument('--encoding-input', type=str, default='utf-8', help='Character encoding of input from IRC')
     ap.add_argument('--heartbeat', type=int, default=30, help='time to wait for IRC commands. The server will send PING and close the connection after another timeout of equal duration if no commands is received.')
