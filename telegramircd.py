@@ -799,6 +799,10 @@ class Command:
         else:
             server.get_nick(target).on_userhost(client, end=True)
 
+    @staticmethod
+    def version(client, *args):
+        client.reply('351 {} telegramircd-git-prsai {} :', client.nick, server.name)
+
     @classmethod
     def notice_or_privmsg(cls, client, command, *args):
         if not args:

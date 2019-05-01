@@ -137,6 +137,7 @@ Supported IRC commands:
 - `/query $nick`, open a chat window with `$nick`.
 - `/topic topic`, change the topic of a group. Because IRC does not support renaming of a channel, you will leave the channel with the old name and join a channel with the new name.
 - `/userhost $nick[ $nick...]`, see information about `$nick`...
+- `/version`, see telegramircd version information.
 - `/who $channel`, see the member list.
 
 ## Server options
