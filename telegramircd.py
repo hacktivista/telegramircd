@@ -2255,16 +2255,12 @@ class Server:
         record = {'id': msg.id, 'date': date, 'dates_edited': [], 'from': sender, 'to': to, 'message': msg.message, 'messages_edited': [], 'inferred': False}
         edited = getattr(msg, 'edit_date', None)
         if edited:
-            try:
+            if msg.id in web.id2message:
                 record['messages_edited'] = web.id2message[msg.id]['messages_edited']
-            except:
-                pass
-            try:
                 record['dates_edited'] = web.id2message[msg.id]['dates_edited']
-            except:
-                pass
+                if not history:
+                    record['messages_edited'].append(web.id2message[msg.id]['message'])
             if not history:
-                record['messages_edited'].append(web.id2message[msg.id]['message'])
                 record['dates_edited'].append(msg.edit_date)
         web.append_history(record)
         # UpdateShort{,Chat}Message do not have update.media
