@@ -2345,7 +2345,7 @@ class Server:
                         refer = None
                     else:
                         from1, to1 = self.resolve_from_to(message)
-                        refer = {'id': message.id, 'date': message.date, 'from': from1, 'to': to1, 'message': message.message, 'inferred': True}
+                        refer = {'id': message.id, 'date': message.date, 'dates_edited': [], 'from': from1, 'to': to1, 'message': message.message, 'messages_edited': [], 'inferred': True}
                         web.append_history(refer)
                 if refer is not None:
                     refer_text = refer['message'].replace('\n', '\\ ')
