@@ -2348,7 +2348,10 @@ class Server:
                         refer = {'id': message.id, 'date': message.date, 'dates_edited': [], 'from': from1, 'to': to1, 'message': message.message, 'messages_edited': [], 'inferred': True}
                         web.append_history(refer)
                 if refer is not None:
-                    refer_text = refer['message'].replace('\n', '\\ ')
+                    if refer['message'] != None:
+                       refer_text = refer['message'].replace('\n', '\\ ')
+                    else:
+                       refer_text = ''
                     refer_len = int(options.refer_text_len)
                     if len(refer_text) > refer_len:
                         refer_text = refer_text[:refer_len]+'...'
