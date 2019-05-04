@@ -2246,11 +2246,18 @@ class Server:
         if options.ignore_bot and isinstance(sender, SpecialUser) and sender.bot:
             return
 
+        date = msg.date.replace(tzinfo=timezone.utc)
+
+        for client in server.auth_clients():
+            if getattr(msg, 'action', None):
+                if isinstance(msg.action, tl.types.MessageActionChatEditPhoto):
+                    action_date = ' ' + self.format_history_date(date).rstrip() if history else ''
+                    self.deliver_action(client, sender, to, msg.id, date, 'has changed channel image' + action_date)
+
         if isinstance(msg, tl.types.MessageService):
             info('on_telegram_update_message %r', msg.to_dict())
             return
 
-        date = msg.date.replace(tzinfo=timezone.utc)
         sender.max_id = msg.id
         record = {'id': msg.id, 'date': date, 'dates_edited': [], 'from': sender, 'to': to, 'message': msg.message, 'messages_edited': [], 'inferred': False}
         edited = getattr(msg, 'edit_date', None)
@@ -2378,8 +2385,7 @@ class Server:
                 try:
                     message_old = web.id2message[msg_id]['messages_edited'][index_edited-1]
                 except:
-                    date_edited_local = edited.astimezone(pytz.timezone(options.history_timezone))
-                    message_old = date_edited_local.strftime(options.history_time_format).strip('"\'')
+                    message_old = self.format_history_date(edited)
                 line = '|Edited {}| {}'.format(message_old, line)
 
             client = server.preferred_client()
@@ -2410,8 +2416,7 @@ class Server:
                 line = nline + line[j:]
 
             if history:
-                date_local = date.astimezone(pytz.timezone(options.history_timezone))
-                line = date_local.strftime(options.history_time_format).strip('"\'') + line
+                line = self.format_history_date(date) + line
 
             if client:
                 where = sender if to == server else to
@@ -2451,18 +2456,7 @@ class Server:
                     #        sender == server and 'media' not in data and
                     #        data['text'] == to.last_text_by_client.get(client)):
                     #    continue
-                    sender_prefix = client.prefix if sender == server else sender.prefix
-                    to_nick = client.nick if to == server else to.nick
-                    line = ':{} PRIVMSG {} :{}'.format(sender_prefix, to_nick, line)
-                    tags = []
-                    if msg_id is not None:
-                        if 'draft/message-tags' in client.capabilities:
-                            tags.append('draft/msgid={}'.format(msg_id))
-                        if 'server-time' in client.capabilities:
-                            tags.append('time={}Z'.format(date.strftime('%FT%T.%f')[:23]))
-                        if tags:
-                            line = '@{} {}'.format(';'.join(tags), line)
-                    client.write(line)
+                    self.deliver_privmsg(client, sender, to, msg_id, date, line)
 
         if msg_id is not None and options.mark_read == 'always' and isinstance(sender, SpecialUser):
             if to is server:
@@ -2470,6 +2464,27 @@ class Server:
                     web.mark_read(sender.peer, msg_id)
             else:
                 web.mark_read(to.peer, msg_id)
+
+    def deliver_action(self, client, sender, to, msg_id, date, text):
+        self.deliver_privmsg(client, sender, to, msg_id, date, '\x01ACTION {}\x01'.format(text))
+
+    def deliver_privmsg(self, client, sender, to, msg_id, date, text):
+        sender_prefix = client.prefix if sender == server else sender.prefix
+        to_nick = client.nick if to == server else to.nick
+        line = ':{} PRIVMSG {} :{}'.format(sender_prefix, to_nick, text)
+        tags = []
+        if msg_id is not None:
+            if 'draft/message-tags' in client.capabilities:
+                tags.append('draft/msgid={}'.format(msg_id))
+            if 'server-time' in client.capabilities:
+                tags.append('time={}Z'.format(date.strftime('%FT%T.%f')[:23]))
+            if tags:
+                line = '@{} {}'.format(';'.join(tags), line)
+        client.write(line)
+
+    def format_history_date(self, date):
+        date_local = date.astimezone(pytz.timezone(options.history_timezone))
+        return date_local.strftime(options.history_time_format).strip('"\'')
 
     def on_disconnect(self, peername):
         # PART all special channels, these chatrooms will be garbage collected
