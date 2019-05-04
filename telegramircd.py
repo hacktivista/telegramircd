@@ -2248,9 +2248,9 @@ class Server:
 
         date = msg.date.replace(tzinfo=timezone.utc)
 
-        for client in server.auth_clients():
-            if getattr(msg, 'action', None):
-                if isinstance(msg.action, tl.types.MessageActionChatEditPhoto):
+        if getattr(msg, 'action', None):
+            if isinstance(msg.action, tl.types.MessageActionChatEditPhoto):
+                for client in server.auth_clients():
                     action_date = ' ' + self.format_history_date(date).rstrip() if history else ''
                     self.deliver_action(client, sender, to, msg.id, date, 'has changed channel image' + action_date)
 
