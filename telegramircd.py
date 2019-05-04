@@ -2249,10 +2249,13 @@ class Server:
         date = msg.date.replace(tzinfo=timezone.utc)
 
         if getattr(msg, 'action', None):
+            action_date = ' ' + self.format_history_date(date).rstrip() if history else ''
             if isinstance(msg.action, tl.types.MessageActionChatEditPhoto):
-                for client in server.auth_clients():
-                    action_date = ' ' + self.format_history_date(date).rstrip() if history else ''
-                    self.deliver_action(client, sender, to, msg.id, date, 'has changed channel image' + action_date)
+                action_text = 'has changed channel image'
+            elif isinstance(msg.action, tl.types.MessageActionChatDeletePhoto):
+                action_text = 'has deleted channel image'
+            for client in server.auth_clients():
+                self.deliver_action(client, sender, to, msg.id, date, action_text + action_date)
 
         if isinstance(msg, tl.types.MessageService):
             info('on_telegram_update_message %r', msg.to_dict())
