@@ -2247,22 +2247,31 @@ class Server:
             return
 
         date = msg.date.replace(tzinfo=timezone.utc)
-
-        if getattr(msg, 'action', None):
+        action_type = self.get_action_type(msg)
+        if action_type:
             action_date = ' ' + self.format_history_date(date).rstrip() if history else ''
             if isinstance(msg.action, tl.types.MessageActionChatEditPhoto):
                 action_text = 'has changed channel image'
             elif isinstance(msg.action, tl.types.MessageActionChatDeletePhoto):
                 action_text = 'has deleted channel image'
+            else:
+                action_text = action_type
             for client in server.auth_clients():
                 self.deliver_action(client, sender, to, msg.id, date, action_text + action_date)
 
         if isinstance(msg, tl.types.MessageService):
             info('on_telegram_update_message %r', msg.to_dict())
-            return
 
         sender.max_id = msg.id
-        record = {'id': msg.id, 'date': date, 'dates_edited': [], 'from': sender, 'to': to, 'message': msg.message, 'messages_edited': [], 'inferred': False}
+        record = { 'id': msg.id,
+                   'date': date,
+                   'dates_edited': [],
+                   'from': sender,
+                   'to': to,
+                   'message': msg.message,
+                   'messages_edited': [],
+                   'action': action_type,
+                   'inferred': False }
         edited = getattr(msg, 'edit_date', None)
         if edited:
             if msg.id in web.id2message:
@@ -2273,6 +2282,9 @@ class Server:
             if not history:
                 record['dates_edited'].append(msg.edit_date)
         web.append_history(record)
+
+        if action_type: return
+
         # UpdateShort{,Chat}Message do not have update.media
         # UpdateNewChannelMessage may have {media: None}
         if getattr(msg, 'media', None):
@@ -2355,13 +2367,23 @@ class Server:
                         refer = None
                     else:
                         from1, to1 = self.resolve_from_to(message)
-                        refer = {'id': message.id, 'date': message.date, 'dates_edited': [], 'from': from1, 'to': to1, 'message': message.message, 'messages_edited': [], 'inferred': True}
+                        refer = { 'id': message.id,
+                                  'date': message.date,
+                                  'dates_edited': [],
+                                  'from': from1,
+                                  'to': to1,
+                                  'message': message.message,
+                                  'messages_edited': [],
+                                  'action': self.get_action_type(message),
+                                  'inferred': True }
                         web.append_history(refer)
                 if refer is not None:
                     if refer['message'] != None:
-                       refer_text = refer['message'].replace('\n', '\\ ')
+                        refer_text = refer['message'].replace('\n', '\\ ')
+                    elif refer['action']:
+                        refer_text = refer['action']
                     else:
-                       refer_text = ''
+                        refer_text = ''
                     refer_len = int(options.refer_text_len)
                     if len(refer_text) > refer_len:
                         refer_text = refer_text[:refer_len]+'...'
@@ -2488,6 +2510,10 @@ class Server:
     def format_history_date(self, date):
         date_local = date.astimezone(pytz.timezone(options.history_timezone))
         return date_local.strftime(options.history_time_format).strip('"\'')
+
+    def get_action_type(self, msg):
+        action = getattr(msg, 'action', None)
+        return '[' + str(type(action)).split("'")[1].split('.')[-1] + ']' if action else ''
 
     def on_disconnect(self, peername):
         # PART all special channels, these chatrooms will be garbage collected
