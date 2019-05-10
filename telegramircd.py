@@ -2571,9 +2571,9 @@ def main():
     ap.add_argument('--logger-ignore', nargs='*', help='list of ignored regex, do not log contacts/chatrooms whose names match')
     ap.add_argument('--logger-mask', help='WeeChat logger.mask.irc')
     ap.add_argument('--logger-time-format', default='%H:%M', help='WeeChat logger.file.time_format')
-    ap.add_argument('--mark-read', choices=('always', 'reply', 'never'), default='reply', help='when to mark_read private messages from users. always: mark_read all messages; reply: mark_read when sending messages to the peer; never: never mark_read. default: reply'),
-    ap.add_argument('--mention-prefix', default=None, help='Prefix of a mention (@username), if unset, the default @ will be unchanged, if \'Empty\' will be empty'),
-    ap.add_argument('--mention-suffix', default=None, help='Suffix of a mention (@username), default empty'),
+    ap.add_argument('--mark-read', choices=('always', 'reply', 'never'), default='reply', help='when to mark_read private messages from users. always: mark_read all messages; reply: mark_read when sending messages to the peer; never: never mark_read. default: reply')
+    ap.add_argument('--mention-prefix', default=None, help='Prefix of a mention (@username), if unset, the default @ will be unchanged, if \'Empty\' will be empty')
+    ap.add_argument('--mention-suffix', default=None, help='Suffix of a mention (@username), default empty')
     ap.add_argument('--paste-wait', type=float, default=0.1, help='PRIVMSG lines will be hold for up to $paste_wait seconds, lines in this interval will be packed to a multiline message')
     ap.add_argument('-q', '--quiet', action='store_const', const=logging.WARN, dest='loglevel')
     ap.add_argument('--refer-text-len', default=8, help='Set the length of refer texts in replies')
