@@ -79,3 +79,6 @@ split-messages-longer: 400
 # Set True to convert UTF-8 emojis to ASCII emoticons when sending to IRC
 # (mapped in file emoji2emoticon.py)
 #emoji-to-ascii: True
+
+# Set True to show typing notifications on control channel
+#typing-notifications True

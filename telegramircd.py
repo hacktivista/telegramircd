@@ -1830,7 +1830,7 @@ class TelegramUpdate:
 
     @staticmethod
     def UpdateChatUserTyping(server, update):
-        pass
+        server.on_telegram_update_typing(update, True)
 
     @staticmethod
     def UpdateContactLink(server, update):
@@ -1914,7 +1914,7 @@ class TelegramUpdate:
 
     @staticmethod
     def UpdateUserTyping(server, update):
-        pass
+        server.on_telegram_update_typing(update, False)
 
     @staticmethod
     def UpdateWebPage(server, update):
@@ -2239,6 +2239,22 @@ class Server:
             getattr(TelegramUpdate, name)(self, update)
         else:
             info('on_telegram_update %r %r', type(update).__name__, update.to_dict())
+
+    def on_telegram_update_typing(self, update, chat):
+        if not options.typing_notifications:
+            return
+        if id == server.user_id:
+            typ_user_aux = None
+        else:
+            u = self.user_id2special_user[update.user_id]
+            typ_user_aux = u.username or u.print_name
+        if chat:
+            typ_chan = 'on channel ' + self.peer_id2special_room[update.chat_id].name
+        else:
+            typ_chan = ''
+        for client in self.auth_clients():
+            typ_user = client.nick if typ_user_aux == None else typ_user_aux
+            StatusChannel.instance.respond(client, 'User {} is typing {}', typ_user, typ_chan)
 
     def on_telegram_update_message(self, update, msg, sender=None, to=None, history=False):
         if sender is None:
@@ -2586,6 +2602,7 @@ def main():
     ap.add_argument('--tg-session', default='telegramircd', help='Telethon session name')
     ap.add_argument('--tg-session-dir', default='.', help='directory of Telethon session file')
     ap.add_argument('--tg-phone', type=int, help='phone number')
+    ap.add_argument('--typing-notifications', type=bool, default=False, help='Show typing notifications on control channel')
     ap.add_argument('-v', '--verbose', action='store_const', const=logging.DEBUG, dest='loglevel')
     global options
     options = ap.parse_args()

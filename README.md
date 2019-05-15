@@ -186,6 +186,7 @@ Supported IRC commands:
 - `--refer-text-len`, Set the length of refer texts in replies
 - `--sasl-password pass`, set the SASL password to `pass`.
 - `--special-channel-prefix`, choices: `&`, `!`, `#`, `##`, prefix for SpecialChannel. [Quassel](quassel-irc.org) does not seem to support channels with prefixes `&`, `--special-channel-prefix '##'` to make Quassel happy
+- `--typing-notifications`, if True show received typing notifications on control channel
 - Telegram related options
   + `--tg-phone`, phone number
   + `--tg-api-id`
