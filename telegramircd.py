@@ -2553,7 +2553,7 @@ def main():
     ap = ArgParser(description='telegramircd brings Telegram to IRC clients')
     ap.add('-c', '--config', is_config_file=True, help='config file path')
     ap.add_argument('-d', '--debug', action='store_true', help='run ipdb on uncaught exception')
-    ap.add_argument('--emoji-to-ascii', type=bool, default=False, help='If True convert UTF-8 emojis to ASCII emoticons in IRC output')
+    ap.add_argument('--emoji-to-ascii', action='store_true', default=False, help='If True convert UTF-8 emojis to ASCII emoticons in IRC output')
     ap.add_argument('--dcc-send', type=int, default=10*1024*1024, help='size limit receiving from DCC SEND. 0: disable DCC SEND')
     ap.add_argument('--encoding-input', type=str, default='utf-8', help='Character encoding of input from IRC')
     ap.add_argument('--heartbeat', type=int, default=30, help='time to wait for IRC commands. The server will send PING and close the connection after another timeout of equal duration if no commands is received.')
@@ -2602,7 +2602,7 @@ def main():
     ap.add_argument('--tg-session', default='telegramircd', help='Telethon session name')
     ap.add_argument('--tg-session-dir', default='.', help='directory of Telethon session file')
     ap.add_argument('--tg-phone', type=int, help='phone number')
-    ap.add_argument('--typing-notifications', type=bool, default=False, help='Show typing notifications on control channel')
+    ap.add_argument('--typing-notifications', action='store_true', default=False, help='Show typing notifications on control channel')
     ap.add_argument('-v', '--verbose', action='store_const', const=logging.DEBUG, dest='loglevel')
     global options
     options = ap.parse_args()
