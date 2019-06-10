@@ -2243,7 +2243,7 @@ class Server:
     def on_telegram_update_typing(self, update, chat):
         if not options.typing_notifications:
             return
-        if id == server.user_id:
+        if update.user_id == self.user_id:
             typ_user_aux = None
         else:
             u = self.user_id2special_user[update.user_id]
