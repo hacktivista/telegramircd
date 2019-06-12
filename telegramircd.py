@@ -2424,7 +2424,7 @@ class Server:
                     except:
                         pass
                 try:
-                    message_old = web.id2message[msg_id]['messages_edited'][index_edited-1]
+                    message_old = web.id2message[msg_id]['messages_edited'][index_edited-1].replace('\n', '\\ ')
                 except:
                     message_old = self.format_history_date(edited)
                 line = '|Edited {}| {}'.format(message_old, line)
