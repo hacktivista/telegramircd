@@ -197,6 +197,19 @@ class Web(object):
         self.recent_messages.append(record)
         self.id2message[record['id']] = record
 
+    def append_history_record(self, msg, fromx, to, action, inferred):
+        record = { 'id': msg.id,
+                   'date': msg.date,
+                   'dates_edited': [],
+                   'from': fromx,
+                   'to': to,
+                   'message': msg.message,
+                   'messages_edited': [],
+                   'action': action,
+                   'inferred': inferred }
+        self.append_history(record)
+        return record
+
     # TODO admin channel.update_admins(members)
     def channel_get_participants(self, channel):
         tg_users = []
@@ -351,6 +364,8 @@ class Web(object):
     def msg(self, client, to, text, reply_to=None):
         try:
             msg = self.proc.send_message(to.peer, text, reply_to=reply_to)
+            sender = server
+            web.append_history_record(msg, sender, to, '', False)
             irc_log(to, to, msg.date, client, msg.message)
         except telethon.errors.rpcbaseerrors.RPCError:
             traceback.print_exc()
@@ -818,7 +833,10 @@ class Command:
             user = server.get_nick(target)
             if isinstance(user, Client):
                 user.write(':{} PRIVMSG {} :{}'.format(client.prefix, user.nick, msg))
-                web.proc.send_message(web.proc.get_me().id, msg)
+                m = web.proc.send_message(server.user_id, msg)
+                sender = server
+                to = server
+                web.append_history_record(m, sender, to, '', False)
             else:
                 user.on_notice_or_privmsg(client, command, msg)
         # IRC channel or special chatroom
@@ -1842,11 +1860,11 @@ class TelegramUpdate:
 
     @staticmethod
     def UpdateDeleteChannelMessages(server, update):
-        pass
+        server.on_telegram_update_delete(update)
 
     @staticmethod
     def UpdateDeleteMessages(server, update):
-        pass
+        server.on_telegram_update_delete(update)
 
     @staticmethod
     def UpdateEditChannelMessage(server, update):
@@ -2256,6 +2274,25 @@ class Server:
             typ_user = client.nick if typ_user_aux == None else typ_user_aux
             StatusChannel.instance.respond(client, 'User {} is typing {}', typ_user, typ_chan)
 
+    def on_telegram_update_delete(self, update):
+        info('DELETE %r', update.__dict__)
+        for deleted in update.messages:
+            if deleted in web.id2message:
+                refer = web.id2message[deleted]
+                if refer['message'] != None:
+                    refer_text = refer['message'].replace('\n', '\\ ')
+                else:
+                    refer_text = ''
+                user = refer['from']
+                for client in server.auth_clients():
+                    text = '|Deleted| {}'.format(refer_text)
+                    break
+                date = datetime.now().replace(tzinfo=timezone.utc)
+                self.deliver_message(deleted, user, refer['to'], date, text)
+            else:
+                for client in self.auth_clients():
+                    StatusChannel.instance.respond(client, 'Message deleted not in cache')
+
     def on_telegram_update_message(self, update, msg, sender=None, to=None, history=False):
         if sender is None:
             sender, to = self.resolve_from_to(msg)
@@ -2383,16 +2420,7 @@ class Server:
                         refer = None
                     else:
                         from1, to1 = self.resolve_from_to(message)
-                        refer = { 'id': message.id,
-                                  'date': message.date,
-                                  'dates_edited': [],
-                                  'from': from1,
-                                  'to': to1,
-                                  'message': message.message,
-                                  'messages_edited': [],
-                                  'action': self.get_action_type(message),
-                                  'inferred': True }
-                        web.append_history(refer)
+                        refer = web.append_history_record(message, from1, to1, self.get_action_type(message), True)
                 if refer is not None:
                     if refer['message'] != None:
                         refer_text = refer['message'].replace('\n', '\\ ')
