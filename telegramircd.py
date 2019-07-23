@@ -2284,9 +2284,7 @@ class Server:
                 else:
                     refer_text = ''
                 user = refer['from']
-                for client in server.auth_clients():
-                    text = '|Deleted| {}'.format(refer_text)
-                    break
+                text = '|Deleted| {}'.format(refer_text)
                 date = datetime.now().replace(tzinfo=timezone.utc)
                 self.deliver_message(deleted, user, refer['to'], date, text)
             else:
