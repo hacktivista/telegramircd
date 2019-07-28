@@ -94,6 +94,7 @@ class Web(object):
         self.authorized = False
         self.two_step = False
         self.userhost_response = ''
+        self.deleted = {}
 
     async def handle_media(self, typ, request):
         id = re.sub(r'\..*', '', request.match_info.get('id'))
@@ -209,6 +210,22 @@ class Web(object):
                    'inferred': inferred }
         self.append_history(record)
         return record
+
+    def append_deleted(self, deleted_id, date):
+        self.deleted[date] = {}
+        self.deleted[date]['id'] = deleted_id
+        to = self.id2message[deleted_id]['to']
+        if to != server:
+            if getattr(to, 'peer', None):
+                self.deleted[date]['target'] = to.peer
+            else:
+                self.deleted[date]['target'] = to.username
+        else:
+            fromx = self.id2message[deleted_id]['from']
+            if fromx == server:
+                self.deleted[date]['target'] = 'me'
+            else:
+                self.deleted[date]['target'] = fromx['username']
 
     # TODO admin channel.update_admins(members)
     def channel_get_participants(self, channel):
@@ -450,6 +467,10 @@ def process_text(to, text):
         at += '@'+server.get_special_user(nick).preferred_nick()+' '
         i = j+2
     return reply, at + text[i:]
+
+
+def deleted(prev, current, target):
+    return [m for m in web.deleted if m <= current and m > prev and web.deleted[m]['target'] == target]
 
 
 def irc_log(where, peer, local_time, sender, line):
@@ -1191,7 +1212,7 @@ class StatusChannel(Channel):
                     req_limit = int(ary[2])
             else:
                 req_limit = 40
-            if req_limit == 0:
+            if req_limit <= 0:
                 return
             if req_peer == client.nick:
                 any_peer = 'me'
@@ -1200,14 +1221,36 @@ class StatusChannel(Channel):
                     any_peer = server.name2special_room[req_peer].peer
                 except:
                     any_peer = req_peer
+            req_limit += 1
             m = web.proc.iter_messages(any_peer,limit=req_limit)
             try:
                 xx = [x for x in m]
                 if xx == []:
                     self.respond(client, 'No messages with user or channel')
                     return
+                if len(xx) == req_limit:
+                    first_msg = xx.pop()
+                    prev_date = first_msg.date
+                else:
+                    prev_date = datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
+                update_delete = type("", (), {})()
                 for ms in reversed(xx):
+                    deldates = deleted(prev_date, ms.date, any_peer)
+                    deldates.sort()
+                    prev_date = ms.date
+                    for de in deldates:
+                        update_delete.messages = [web.deleted[de]['id']]
+                        update_delete.date = de
+                        server.on_telegram_update_delete(update_delete, history=True)
+
                     server.on_telegram_update_message(None, ms, history=True)
+
+                lastdeldates = deleted(prev_date, datetime.utcnow().replace(tzinfo=timezone.utc), any_peer)
+                lastdeldates.sort()
+                for de in lastdeldates:
+                    update_delete.messages = [web.deleted[de]['id']]
+                    update_delete.date = de
+                    server.on_telegram_update_delete(update_delete, history=True)
             except:
                 self.respond(client, 'Entity not found')
                 return
@@ -2274,7 +2317,7 @@ class Server:
             typ_user = client.nick if typ_user_aux == None else typ_user_aux
             StatusChannel.instance.respond(client, 'User {} is typing {}', typ_user, typ_chan)
 
-    def on_telegram_update_delete(self, update):
+    def on_telegram_update_delete(self, update, history=False):
         info('DELETE %r', update.__dict__)
         for deleted in update.messages:
             if deleted in web.id2message:
@@ -2283,10 +2326,16 @@ class Server:
                     refer_text = refer['message'].replace('\n', '\\ ')
                 else:
                     refer_text = ''
+                if history:
+                    deldate = update.date
+                    hisdate = self.format_history_date(refer['date'])
+                else:
+                    deldate = datetime.utcnow().replace(tzinfo=timezone.utc)
+                    hisdate = ''
+                    web.append_deleted(deleted, deldate)
                 user = refer['from']
-                text = '|Deleted| {}'.format(refer_text)
-                date = datetime.now().replace(tzinfo=timezone.utc)
-                self.deliver_message(deleted, user, refer['to'], date, text)
+                text = '|Deleted| {}{}'.format(hisdate, refer_text)
+                self.deliver_message(deleted, user, refer['to'], deldate, text, history=history)
             else:
                 for client in self.auth_clients():
                     StatusChannel.instance.respond(client, 'Message deleted not in cache')
