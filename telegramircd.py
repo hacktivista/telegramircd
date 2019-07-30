@@ -95,6 +95,7 @@ class Web(object):
         self.two_step = False
         self.userhost_response = ''
         self.deleted = {}
+        self.deleted_idx = deque()
 
     async def handle_media(self, typ, request):
         id = re.sub(r'\..*', '', request.match_info.get('id'))
@@ -212,6 +213,10 @@ class Web(object):
         return record
 
     def append_deleted(self, deleted_id, date):
+        if len(self.deleted_idx) >= 10000:
+            d = self.deleted_idx.popleft()
+            del self.deleted[d]
+        self.deleted_idx.append(date)
         self.deleted[date] = {}
         self.deleted[date]['id'] = deleted_id
         to = self.id2message[deleted_id]['to']
