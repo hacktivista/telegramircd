@@ -207,6 +207,7 @@ class Web(object):
                    'to': to,
                    'message': msg.message,
                    'messages_edited': [],
+                   'media_text': [],
                    'action': action,
                    'inferred': inferred }
         self.append_history(record)
@@ -2375,6 +2376,7 @@ class Server:
                    'to': to,
                    'message': msg.message,
                    'messages_edited': [],
+                   'media_text': [],
                    'action': action_type,
                    'inferred': False }
         edited = getattr(msg, 'edit_date', None)
@@ -2440,7 +2442,7 @@ class Server:
                 text = msg.media.caption.replace('\n', '\\ ') + ' | ' + text
             if msg.message:
                 text = msg.message.replace('\n', '\\ ') + ' | ' + text
-            text = '[{}] '.format(typ) + text
+            text = record['media_text'] = '[{}] '.format(typ) + text
         else:
             text = msg.message
 
@@ -2474,14 +2476,16 @@ class Server:
                         from1, to1 = self.resolve_from_to(message)
                         refer = web.append_history_record(message, from1, to1, self.get_action_type(message), True)
                 if refer is not None:
-                    if refer['message'] != None:
+                    if refer['media_text']:
+                        refer_text = refer['media_text']
+                    elif refer['message'] != None:
                         refer_text = refer['message'].replace('\n', '\\ ')
                     elif refer['action']:
                         refer_text = refer['action']
                     else:
                         refer_text = ''
                     refer_len = int(options.refer_text_len)
-                    if len(refer_text) > refer_len:
+                    if len(refer_text) > refer_len and not refer['media_text']:
                         refer_text = refer_text[:refer_len]+'...'
                     user = refer['from']
                     for client in server.auth_clients():
