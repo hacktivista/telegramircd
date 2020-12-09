@@ -4,4 +4,4 @@ pytz
 ipdb
 ipython
 configargparse
-telethon-sync
+https://github.com/LonamiWebs/Telethon/archive/sync-stale.zip
