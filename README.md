@@ -8,6 +8,8 @@ telegramircd uses [telethon-sync](https://github.com/LonamiWebs/Telethon) to com
 
 **[ This is a fork with dialogs and history functionality among other improvements ]**
 
+**[ The development of this project is finished, no improvements nor new features will be implemented, only bugfixes will be applied ]**
+
 ## Installation
 
 Prerequisites
